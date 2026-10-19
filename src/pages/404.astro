@@ -1,0 +1,26 @@
+---
+import Base from '../layouts/Base.astro';
+---
+
+<Base title="404">
+  <main class="page notfound">
+    <p class="mono">error 404</p>
+    <h1 class="gradient-text">Tahle stránka je mimo orbitu.</h1>
+    <p><a href="/">← zpátky domů</a></p>
+  </main>
+</Base>
+
+<style>
+  .notfound {
+    min-height: 100svh;
+    display: grid;
+    align-content: center;
+    gap: 1.5rem;
+  }
+  .mono {
+    color: var(--muted);
+  }
+  h1 {
+    font-size: clamp(2.5rem, 9vw, 6rem);
+  }
+</style>

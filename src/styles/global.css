@@ -1,0 +1,88 @@
+@import '@fontsource-variable/space-grotesk';
+@import '@fontsource-variable/jetbrains-mono';
+
+:root {
+  --bg: #07080d;
+  --bg-2: #0e1018;
+  --card: rgb(255 255 255 / 0.04);
+  --line: rgb(255 255 255 / 0.1);
+  --fg: #eef0f7;
+  --muted: #9aa0b4;
+  --cyan: #4de3ff;
+  --violet: #9b7bff;
+  --lime: #c6ff4d;
+  --gradient: linear-gradient(100deg, var(--cyan), var(--violet) 55%, #ff7ad9);
+  --sans: 'Space Grotesk Variable', system-ui, sans-serif;
+  --mono: 'JetBrains Mono Variable', ui-monospace, monospace;
+  --page: 72rem;
+  color-scheme: dark;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font: 400 1.0625rem/1.6 var(--sans);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+a {
+  color: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid var(--cyan);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+h1,
+h2,
+h3 {
+  margin: 0;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+}
+
+p {
+  margin: 0 0 1em;
+}
+
+.page {
+  width: min(100% - 2.5rem, var(--page));
+  margin-inline: auto;
+}
+
+.mono {
+  font-family: var(--mono);
+}
+
+.gradient-text {
+  background: var(--gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}

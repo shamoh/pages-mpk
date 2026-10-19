@@ -1,0 +1,432 @@
+---
+import { getCollection, render } from 'astro:content';
+import Orbits from '../components/Orbits.astro';
+import Base from '../layouts/Base.astro';
+import { site } from '../site';
+
+const categories = {
+  veda: { label: 'Věda', icon: '⚛' },
+  sport: { label: 'Sport', icon: '🥏' },
+} as const;
+
+const entries = (await getCollection('uspechy')).sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
+const achievements = await Promise.all(entries.map(async (entry) => ({ ...entry, Content: (await render(entry)).Content })));
+const counts = {
+  all: achievements.length,
+  veda: achievements.filter((a) => a.data.kategorie === 'veda').length,
+  sport: achievements.filter((a) => a.data.kategorie === 'sport').length,
+};
+const formatDate = (date: Date) => date.toLocaleDateString('cs-CZ', { month: 'long', year: 'numeric' });
+const links = site.links.filter((link) => link.url);
+---
+
+<Base>
+  <header class="hero">
+    <Orbits />
+    <div class="page hero-inner">
+      <p class="chip mono"><span class="dot"></span>{new URL(site.url).host}</p>
+      <h1>
+        {site.headline.map((line, i) => <span class:list={['line', { 'gradient-text': i === site.headline.length - 1 }]}>{line}</span>)}
+      </h1>
+      <p class="intro">{site.intro}</p>
+      <p class="cta">
+        <a class="button" href="#uspechy">Úspěchy <span aria-hidden="true">↓</span></a>
+        <span class="mono hello">ahoj, já jsem {site.name}</span>
+      </p>
+    </div>
+  </header>
+
+  <div class="marquee" aria-hidden="true">
+    <div class="track mono">
+      {[...site.topics, ...site.topics].map((topic) => <span>{topic}<i>✦</i></span>)}
+    </div>
+  </div>
+
+  <main class="page">
+    <section id="uspechy" class="achievements" aria-labelledby="uspechy-title">
+      <div class="section-head">
+        <h2 id="uspechy-title">Úspěchy</h2>
+        <div class="filters" role="group" aria-label="Filtr podle kategorie">
+          <button type="button" aria-pressed="true" data-filter="all">Vše <span>{counts.all}</span></button>
+          <button type="button" aria-pressed="false" data-filter="veda">{categories.veda.icon} Věda <span>{counts.veda}</span></button>
+          <button type="button" aria-pressed="false" data-filter="sport">{categories.sport.icon} Sport <span>{counts.sport}</span></button>
+        </div>
+      </div>
+
+      <ol class="cards">
+        {achievements.map(({ data, Content }) => (
+          <li class="card" data-kategorie={data.kategorie}>
+            <div class="card-top mono">
+              <span class:list={['badge', data.kategorie]}>{categories[data.kategorie].icon} {categories[data.kategorie].label}</span>
+              <time datetime={data.date.toISOString().slice(0, 10)}>{formatDate(data.date)}</time>
+            </div>
+            <h3>{data.odkaz ? <a href={data.odkaz}>{data.title} ↗</a> : data.title}</h3>
+            {(data.vysledek || data.misto) && (
+              <p class="meta">
+                {data.vysledek && <strong>{data.vysledek}</strong>}
+                {data.vysledek && data.misto && ' · '}
+                {data.misto}
+              </p>
+            )}
+            <div class="text"><Content /></div>
+            {data.ukazka && <span class="sample mono">ukázka</span>}
+          </li>
+        ))}
+      </ol>
+    </section>
+
+    <section class="interests" aria-labelledby="interests-title">
+      <h2 id="interests-title">Co mě baví</h2>
+      <ul class="tiles">
+        {site.interests.map((interest) => (
+          <li class="tile">
+            <span class="tile-icon" aria-hidden="true">{interest.icon}</span>
+            <h3>{interest.title}</h3>
+            <p>{interest.text}</p>
+          </li>
+        ))}
+      </ul>
+    </section>
+  </main>
+
+  <footer class="footer page mono">
+    <span>© {new Date().getFullYear()} {site.name}</span>
+    {links.length > 0 && (
+      <span class="links">{links.map((link) => <a href={link.url}>{link.title} ↗</a>)}</span>
+    )}
+    <span>postaveno s <a href="https://astro.build">Astro</a></span>
+  </footer>
+</Base>
+
+<script>
+  const buttons = [...document.querySelectorAll<HTMLButtonElement>('[data-filter]')];
+  const cards = [...document.querySelectorAll<HTMLElement>('.card')];
+  for (const button of buttons) {
+    button.addEventListener('click', () => {
+      const filter = button.dataset.filter;
+      for (const other of buttons) other.setAttribute('aria-pressed', String(other === button));
+      for (const card of cards) card.hidden = filter !== 'all' && card.dataset.kategorie !== filter;
+    });
+  }
+</script>
+
+<style>
+  .hero {
+    position: relative;
+    min-height: min(100svh, 56rem);
+    display: grid;
+    align-items: center;
+    overflow: hidden;
+    background:
+      radial-gradient(60rem 30rem at 80% 30%, rgb(155 123 255 / 0.18), transparent 70%),
+      radial-gradient(40rem 25rem at 10% 90%, rgb(77 227 255 / 0.1), transparent 70%);
+  }
+  .hero-inner {
+    position: relative;
+    z-index: 1;
+    padding-block: 7rem 5rem;
+    pointer-events: none;
+  }
+  .hero-inner a {
+    pointer-events: auto;
+  }
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.4rem 0.9rem;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    font-size: 0.8rem;
+    color: var(--muted);
+    background: rgb(7 8 13 / 0.6);
+    backdrop-filter: blur(6px);
+  }
+  .dot {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
+    background: var(--lime);
+    box-shadow: 0 0 12px var(--lime);
+    animation: pulse 2s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    50% {
+      opacity: 0.35;
+    }
+  }
+  h1 {
+    margin-top: 1.75rem;
+    font-size: clamp(3.5rem, 13vw, 9.5rem);
+    font-weight: 700;
+    line-height: 0.92;
+  }
+  .line {
+    display: block;
+    animation: rise 900ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  }
+  .line:nth-child(2) {
+    animation-delay: 120ms;
+  }
+  .line:nth-child(3) {
+    animation-delay: 240ms;
+  }
+  @keyframes rise {
+    from {
+      opacity: 0;
+      transform: translateY(0.4em);
+    }
+  }
+  .intro {
+    max-width: 34rem;
+    margin-top: 2rem;
+    font-size: clamp(1.1rem, 2.2vw, 1.3rem);
+    color: var(--muted);
+  }
+  .cta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 1rem 1.5rem;
+    margin-top: 2.5rem;
+  }
+  .button {
+    display: inline-flex;
+    gap: 0.5rem;
+    padding: 0.85rem 1.4rem;
+    border-radius: 999px;
+    background: var(--fg);
+    color: var(--bg);
+    font-weight: 600;
+    text-decoration: none;
+    transition: transform 200ms, box-shadow 200ms;
+  }
+  .button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgb(77 227 255 / 0.25);
+  }
+  .hello {
+    font-size: 0.85rem;
+    color: var(--muted);
+  }
+
+  .marquee {
+    overflow: hidden;
+    border-block: 1px solid var(--line);
+    background: var(--bg-2);
+  }
+  .track {
+    display: flex;
+    width: max-content;
+    animation: scroll 40s linear infinite;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+  }
+  .track span {
+    padding: 1rem 0 1rem 1.5rem;
+    white-space: nowrap;
+  }
+  .track i {
+    font-style: normal;
+    margin-left: 1.5rem;
+    color: var(--violet);
+  }
+  @keyframes scroll {
+    to {
+      transform: translateX(-50%);
+    }
+  }
+
+  .achievements {
+    padding-block: clamp(4rem, 10vw, 7rem);
+  }
+  .section-head {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: end;
+    gap: 1.5rem;
+    margin-bottom: 2.5rem;
+  }
+  h2 {
+    font-size: clamp(2.5rem, 7vw, 4.5rem);
+  }
+  .filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  .filters button {
+    font: 500 0.95rem var(--sans);
+    color: var(--muted);
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 0.55rem 1rem;
+    cursor: pointer;
+    transition: all 200ms;
+  }
+  .filters button span {
+    font-family: var(--mono);
+    font-size: 0.8em;
+    opacity: 0.7;
+    margin-left: 0.2rem;
+  }
+  .filters button:hover {
+    color: var(--fg);
+    border-color: rgb(255 255 255 / 0.25);
+  }
+  .filters button[aria-pressed='true'] {
+    color: var(--bg);
+    background: var(--fg);
+    border-color: var(--fg);
+  }
+
+  .cards {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 20rem), 1fr));
+    gap: 1rem;
+  }
+  .card {
+    position: relative;
+    padding: 1.5rem;
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    background: var(--card);
+    transition: transform 250ms, border-color 250ms, background 250ms;
+  }
+  .card:hover {
+    transform: translateY(-4px);
+    border-color: rgb(255 255 255 / 0.22);
+    background: rgb(255 255 255 / 0.06);
+  }
+  .card[hidden] {
+    display: none;
+  }
+  .card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    font-size: 0.78rem;
+    color: var(--muted);
+    margin-bottom: 1.25rem;
+  }
+  .badge {
+    padding: 0.25rem 0.6rem;
+    border-radius: 999px;
+    font-weight: 600;
+  }
+  .badge.veda {
+    color: var(--cyan);
+    background: rgb(77 227 255 / 0.1);
+  }
+  .badge.sport {
+    color: var(--lime);
+    background: rgb(198 255 77 / 0.1);
+  }
+  .card h3 {
+    font-size: 1.4rem;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+  }
+  .card h3 a {
+    text-decoration: none;
+  }
+  .card h3 a:hover {
+    color: var(--cyan);
+  }
+  .meta {
+    margin: 0.6rem 0 0;
+    color: var(--muted);
+  }
+  .meta strong {
+    color: var(--fg);
+  }
+  .text {
+    margin-top: 1rem;
+    font-size: 0.95rem;
+    color: var(--muted);
+  }
+  .text :global(p:last-child) {
+    margin-bottom: 0;
+  }
+  .sample {
+    position: absolute;
+    top: -0.6rem;
+    right: 1rem;
+    padding: 0.15rem 0.5rem;
+    border-radius: 6px;
+    font-size: 0.7rem;
+    color: var(--bg);
+    background: var(--lime);
+  }
+
+  .interests {
+    padding-bottom: clamp(4rem, 10vw, 7rem);
+  }
+  .interests h2 {
+    margin-bottom: 2.5rem;
+  }
+  .tiles {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 15rem), 1fr));
+    gap: 1rem;
+  }
+  .tile {
+    padding: 1.5rem;
+    border-radius: 20px;
+    border: 1px solid var(--line);
+    background:
+      radial-gradient(12rem 8rem at 100% 0%, rgb(155 123 255 / 0.14), transparent 70%),
+      var(--card);
+    transition: transform 250ms, border-color 250ms;
+  }
+  .tile:hover {
+    transform: translateY(-4px) rotate(-0.5deg);
+    border-color: rgb(255 255 255 / 0.22);
+  }
+  .tile-icon {
+    display: inline-grid;
+    place-items: center;
+    width: 3rem;
+    height: 3rem;
+    border-radius: 14px;
+    background: rgb(255 255 255 / 0.06);
+    font-size: 1.6rem;
+    margin-bottom: 1rem;
+  }
+  .tile h3 {
+    font-size: 1.25rem;
+    letter-spacing: -0.02em;
+    margin-bottom: 0.4rem;
+  }
+  .tile p {
+    margin: 0;
+    font-size: 0.95rem;
+    color: var(--muted);
+  }
+
+  .footer {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 1rem 2rem;
+    padding-block: 2rem 3rem;
+    border-top: 1px solid var(--line);
+    font-size: 0.8rem;
+    color: var(--muted);
+  }
+  .links {
+    display: flex;
+    gap: 1.25rem;
+  }
+</style>
