@@ -2,7 +2,7 @@
 title: Ukázkový discgolfový turnaj
 date: 2026-08-30
 kategorie: sport
-vysledek: 2. místo
+vysledek: 1. místo
 misto: discgolfové hřiště
 ukazka: true
 ---
