@@ -24,14 +24,13 @@ const links = site.links.filter((link) => link.url);
   <header class="hero">
     <Orbits />
     <div class="page hero-inner">
-      <p class="chip mono"><span class="dot"></span>{new URL(site.url).host}</p>
+      <p class="chip mono"><span class="dot"></span>ahoj, já jsem {site.name}</p>
       <h1>
         {site.headline.map((line, i) => <span class:list={['line', { 'gradient-text': i === site.headline.length - 1 }]}>{line}</span>)}
       </h1>
       <p class="intro">{site.intro}</p>
       <p class="cta">
         <a class="button" href="#uspechy">Úspěchy <span aria-hidden="true">↓</span></a>
-        <span class="mono hello">ahoj, já jsem {site.name}</span>
       </p>
     </div>
   </header>
@@ -94,7 +93,6 @@ const links = site.links.filter((link) => link.url);
     {links.length > 0 && (
       <span class="links">{links.map((link) => <a href={link.url}>{link.title} ↗</a>)}</span>
     )}
-    <span>postaveno s <a href="https://astro.build">Astro</a></span>
   </footer>
 </Base>
 
@@ -204,10 +202,6 @@ const links = site.links.filter((link) => link.url);
   .button:hover {
     transform: translateY(-2px);
     box-shadow: 0 10px 30px rgb(77 227 255 / 0.25);
-  }
-  .hello {
-    font-size: 0.85rem;
-    color: var(--muted);
   }
 
   .marquee {
