@@ -4,6 +4,8 @@ export const site = {
   title: 'Ross · vesmír, muzika & discgolf',
   description: 'Osobní stránka: vesmír, věda, muzika a discgolf.',
   url: 'https://martin.kramolis.cz',
+  /** Google Analytics 4 measurement ID; empty = no analytics */
+  analytics: 'G-DYDVCWPYX2',
   /** the big headline on the home page; each item is one line */
   headline: ['Vesmír.', 'Kytara.', 'Discgolf.'],
   intro:

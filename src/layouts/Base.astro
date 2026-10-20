@@ -27,6 +27,19 @@ const canonical = new URL(Astro.url.pathname, site.url).href;
     <meta property="og:title" content={fullTitle} />
     <meta property="og:description" content={site.description} />
     <meta property="og:url" content={canonical} />
+    {import.meta.env.PROD && site.analytics && (
+      <>
+        <script is:inline async src={`https://www.googletagmanager.com/gtag/js?id=${site.analytics}`}></script>
+        <script is:inline define:vars={{ id: site.analytics }}>
+          window.dataLayer = window.dataLayer || [];
+          function gtag() {
+            dataLayer.push(arguments);
+          }
+          gtag('js', new Date());
+          gtag('config', id);
+        </script>
+      </>
+    )}
   </head>
   <body>
     <slot />
